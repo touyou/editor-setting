@@ -1,0 +1,54 @@
+((("python-mode-map" .
+   [0 0 0 0 0 0 0 0 0 0 0 0 1 0 0])
+  ("backup-inhibited" .
+   [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1])
+  ("backup" .
+   [0 0 0 0 1 0])
+  ("lambda" .
+   [0 0 2 0 0 0])
+  ("tabbar-buffer-groups-function" .
+   [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1])
+  ("wb-line-number" .
+   [0 0 0 0 0 0 0 0 0 0 0 0 0 3])
+  ("color-theme" .
+   [0 0 0 0 0 0 0 0 0 0 1])
+  ("require" .
+   [0 0 3 0 1 0 3])
+  ("auto-complete-clang" .
+   [0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0])
+  ("setq" .
+   [3 0 1 3])
+  ("ac-auto-start" .
+   [0 0 0 0 0 0 1 0 0 0 0 0 0])
+  ("nil" .
+   [1 0 0])
+  ("ac-set-trigger-key" .
+   [0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0])
+  ("ac-quick-help-delay" .
+   [0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0])
+  ("setq-default" .
+   [0 0 0 0 0 1 0 0 0 0 0 0])
+  ("tab-width" .
+   [0 0 0 0 0 0 1 0 0])
+  ("default-tab-width" .
+   [0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0])
+  ("tab-stop-list" .
+   [0 0 0 0 0 0 1 0 0 0 0 0 0])
+  ("global-set-key" .
+   [0 0 0 1 0 2 0 0 0 0 0 0 0 0])
+  ("skeleton-pair-insert-maybe" .
+   [0 0 0 1 2 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0])
+  ("kdb" .
+   [2 0 0])
+  ("autoload" .
+   [0 0 0 0 0 0 0 1])
+  ("save-current-buffer" .
+   [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1])
+  ("v" .
+   [1])
+  ("if" .
+   [1 0])
+  ("list" .
+   [0 0 0 1])
+  ("elif" .
+   [3 0 0 0])))
