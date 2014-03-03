@@ -1,0 +1,4 @@
+editor-setting
+==============
+
+vim, emacs
