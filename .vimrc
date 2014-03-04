@@ -1,133 +1,209 @@
 colorscheme desert
-set guifont=ゆたぽん（コーディング）:h14
+if has("win32")||has("win64")||has("win32unix")
+    set guifont=ゆたぽん（コーディング）:h14
+endif
 
 set backspace=indent,eol,start
 
 " WildMenu
 set wildmenu
 
-" マッピング
+" mapping
 map <C-A> ggVG
 map <C-X> "+x
 map <C-C> "+y
 map <C-V> "+gP
 map <C-S> :w
 map <C-F> :brows confirm e
+vnoremap y "+y
 
 
 "----------------------------------------------------
-" バックアップ関係
+" backup
 "----------------------------------------------------
-" バックアップをとらない
+" don't backup
 set nobackup
-" ファイルの上書きの前にバックアップを作る
-" (ただし、backup がオンでない限り、バックアップは上書きに成功した後削除される)
+" create backup before save
 set writebackup
-" バックアップをとる場合
-"set backup
-" バックアップファイルを作るディレクトリ
-"set backupdir=~/backup
-" スワップファイルを作るディレクトリ
-"set directory=~/swap
 
 "----------------------------------------------------
-" 検索関係
+" search
 "----------------------------------------------------
-" コマンド、検索パターンを100個まで履歴に残す
+" remain searching history until 100
 set history=100
-" 検索の時に大文字小文字を区別しない
-set ignorecase
-" 検索の時に大文字が含まれている場合は区別して検索する
+" when search, tell capital
 set smartcase
-" 最後まで検索したら先頭に戻る
+" search to end and return start
 set wrapscan
-" インクリメンタルサーチを使わない
+" don't use incremental search
 set noincsearch
 
 "----------------------------------------------------
-" 表示関係
+" view
 "----------------------------------------------------
-" タイトルをウインドウ枠に表示する
+" show title
 set title
-" 行番号を表示する
+" show line number
 set number
-" ルーラーを表示
-"set ruler
-" タブ文字を CTRL-I で表示し、行末に $ で表示する
-"set list
-" 入力中のコマンドをステータスに表示する
+" show ruler
+set ruler
+" show tab '>---' and end of line '$'
+set list
+set listchars=tab:>-,trail:-
+" display incomplete commands
 set showcmd
-" ステータスラインを常に表示
+" always show status line
 set laststatus=2
-" 括弧入力時の対応する括弧を表示
+" display opposite parentheses
 set showmatch
-" 対応する括弧の表示時間を2にする
+" set time which display opposite parentheses
 set matchtime=2
-" シンタックスハイライトを有効にする
+" valid syntax highlight
 syntax on
-" 検索結果文字列のハイライトを有効にする
+" valid highlight searching word
 set hlsearch
-" コメント文の色を変更
+" change comment color
 highlight Comment ctermfg=DarkCyan
-" コマンドライン補完を拡張モードにする
+" command line supplement -> advanced
 set wildmenu
+" height command line area
+set cmdheight=2
+" don't show message when start up
+set shortmess+=I
 
-" 入力されているテキストの最大幅
-" (行がそれより長くなると、この幅を超えないように空白の後で改行される)を無効にする
-set textwidth=0
-" ウィンドウの幅より長い行は折り返して、次の行に続けて表示する
+" limit one line length
+set textwidth=80
+" too long line is folded and showed in next line
 set wrap
+" highlight too long line
+set colorcolumn=80
+" show lastline
+set display=lastline
+" fold by indent
+setl foldmethod=indent
+" fold more than 99 level
+setl foldlevel=99
 
-" ステータスラインの色
+" color of statusline
 highlight StatusLine   term=NONE cterm=NONE ctermfg=black ctermbg=white
 
 "----------------------------------------------------
-" インデント
+" indent
 "----------------------------------------------------
-" オートインデントを無効にする
-"set noautoindent
-" タブが対応する空白の数
+" valid auto indent
+set autoindent
+" valid high-tech auto indent
+set smartindent
+" valid customizable auto indent
+set cindent
+" tab to num of blank
 set tabstop=4
-" タブやバックスペースの使用等の編集操作をするときに、タブが対応する空白の数
+" tab to num of blank when edit
 set softtabstop=4
-" インデントの各段階に使われる空白の数
+" indent wide(num of blank)
 set shiftwidth=4
-" タブを挿入するとき、代わりに空白を使わない
-set noexpandtab
+" when press tab, input by blank
+set expandtab
+" in top of line, press tab and indent num of 'shiftwidth'
+set smarttab
 
 "----------------------------------------------------
-" オートコマンド
+" auto command
 "----------------------------------------------------
-if has("autocmd")
-    " ファイルタイプ別インデント、プラグインを有効にする
-    filetype plugin indent on
-    " カーソル位置を記憶する
-    autocmd BufReadPost *
-        \ if line("'\"") > 0 && line("'\"") <= line("$") |
-        \   exe "normal g`\"" |
-        \ endif
+if has("win32")||has("win64")||has("win32unix")
+    if has("autocmd")
+        " valid plugin and indent by filetype
+        filetype plugin indent on
+        " memory where cursor is
+        autocmd BufReadPost *
+            \ if line("'\"") > 0 && line("'\"") <= line("$") |
+            \   exe "normal g`\"" |
+            \ endif
+    endif
+endif
+"----------------------------------------------------
+" word encoding
+"----------------------------------------------------
+" terminal encoding
+set encoding=utf-8
+set termencoding=utf-8
+set fileencoding=utf-8
+" valid encoding
+set fileencodings=iso-2022-jp,cp932,euc-jp,utf-8
+" auto recognize encoding
+if &encoding !=# 'utf-8'
+    set encoding=japan
+    set fileencoding=japan
+endif
+if has('iconv')
+    let s:enc_euc = 'euc-jp'
+    let s:enc_jis = 'iso-2022-jp'
+    " check iconv in eucJP-ms
+    if iconv("\x87\x64\x87\x6a", 'cp932', 'eucjp-ms') ==# "\xad\xc5\xad\xcb"
+        let s:enc_euc = 'eucjp-ms'
+        let s:enc_jis = 'iso-2022-jp-3'
+    " check iconv in JISX0213
+    elseif iconv("\x87\x64\x87\x6a", 'cp932', 'euc-jisx0213') ==# "\xad\xc5\xad\xcb"
+        let s:enc_euc = 'euc-jisx0213'
+        let s:enc_jis = 'iso-2022-jp-3'
+    endif
+    " build fileencodings
+    if &encoding ==# 'utf-8'
+        let s:fileencodings_default = &fileencodings
+        let &fileencodings = s:enc_jis .','. s:enc_euc .',cp932'
+        let &fileencodings = &fileencodings .','. s:fileencodings_default
+        unlet s:fileencodings_default
+    else
+        let &fileencodings = &fileencodings .','. s:enc_jis
+        set fileencodings+=utf-8,ucs-2le,ucs-2
+        if &encoding =~# '^\(euc-jp\|euc-jisx0213\|eucjp-ms\)$'
+            set fileencodings+=cp932
+            set fileencodings-=euc-jp
+            set fileencodings-=euc-jisx0213
+            set fileencodings-=eucjp-ms
+            let &encoding = s:enc_euc
+            let &fileencoding = s:enc_euc
+        else
+            let &fileencodings = &fileencodings .','. s:enc_euc
+        endif
+    endif
+    " remove constant
+    unlet s:enc_euc
+    unlet s:enc_jis
+endif
+" if japanese isn't included, use encoding
+if has('autocmd')
+    function! AU_ReCheck_FENC()
+        if &fileencoding =~# 'iso-2022-jp' && search("[^\x01-\x7e]", 'n') == 0
+            let &fileencoding=&encoding
+        endif
+    endfunction
+    autocmd BufReadPost * call AU_ReCheck_FENC()
+endif
+" auto recognize return type
+set fileformats=unix,dos,mac
+" fix when irregular word
+if exists('&ambiwidth')
+    set ambiwidth=double
 endif
 
 "----------------------------------------------------
-" その他
+" other
 "----------------------------------------------------
-" バッファを切替えてもundoの効力を失わない
-set hidden
-" 起動時のメッセージを表示しない
-set shortmess+=
-
-"クリップボードをWindowsと連携
+" synch clipbord
 set clipboard=unnamed
-"Vi互換をオフ
+" off vi interchange
 set nocompatible
-"変更中のファイルでも、保存しないで他のファイルを表示
+" don't save and show other file
 set hidden
-"閉じ括弧が入力されたとき、対応する括弧を表示する
-set showmatch
-"新しい行を作ったときに高度な自動インデントを行う
-set smartindent
-"行頭の余白内で Tab を打ち込むと、'shiftwidth' の数だけインデントする。
-set smarttab
-"カーソルを行頭、行末で止まらないようにする
+" don't stop cursor
 set whichwrap=b,s,h,l,<,>,[,]
 
+" vundle
+set rtp+=~/.vim/vundle.git/
+filetype off
+call vundle#rc()
+Bundle 'mitechie/pyflakes-pathogen'
+Bundle 'sontek/rope-vim'
+Bundle 'lambdalisue/vim-django-support'
+filetype plugin indent on
