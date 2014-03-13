@@ -1,209 +1,400 @@
-colorscheme desert
-if has("win32")||has("win64")||has("win32unix")
-    set guifont=�䂽�ۂ�i�R�[�f�B���O�j:h14
+﻿set nocompatible
+scriptencoding utf-8
+set fileformat=unix
+"scriptencodingと、このファイルのエンコーディングが一致するよう注意！
+"scriptencodingは、vimの内部エンコーディングと同じものを推奨します。
+"改行コードは set fileformat=unix に設定するとunixでも使えます。
+
+"----------------------------------------
+" ユーザーランタイムパス設定
+"----------------------------------------
+"Windows, unixでのruntimepathの違いを吸収するためのもの。 
+"$MY_VIMRUNTIMEはユーザーランタイムディレクトリを示す。 
+":echo $MY_VIMRUNTIMEで実際のパスを確認できます。 
+if isdirectory($HOME . '/.vim')
+  let $MY_VIMRUNTIME = $HOME.'/.vim'
+elseif isdirectory($HOME . '\vimfiles')
+  let $MY_VIMRUNTIME = $HOME.'\vimfiles'
+elseif isdirectory($VIM . '\vimfiles')
+  let $MY_VIMRUNTIME = $VIM.'\vimfiles'
+endif 
+"ランタイムパスを通す必要のあるプラグインを使用する場合
+"$MY_VIMRUNTIMEを使用すると Windows/Linuxで切り分ける必要が無くなります。 
+"例) vimfiles/qfixapp (Linuxでは~/.vim/qfixapp)にランタイムパスを通す場合 
+"set runtimepath+=$MY_VIMRUNTIME/qfixapp
+
+"----------------------------------------
+" 内部エンコーディング指定
+"----------------------------------------
+"内部エンコーディングのUTF-8化と文字コードの自動認識設定をencode.vimで行う。
+"オールインワンパッケージの場合 vimrcで設定されているので何もしない。
+"エンコーディング指定や文字コードの自動認識設定が適切に設定されている場合、
+"次行の encode.vim読込部分はコメントアウトして下さい。「encode.vimについて」
+source $MY_VIMRUNTIME/plugin/encode.vim
+
+"scriptencodingと異なる内部エンコーディングに変更する場合、
+"変更後にもscriptencodingを指定しておくと問題が起きにくくなります。
+scriptencoding utf-8
+
+"----------------------------------------
+" システム設定
+"----------------------------------------
+"mswin.vimを読み込む
+"source $VIMRUNTIME/mswin.vim
+"behave mswin
+
+"ファイルの上書きの前にバックアップを作る/作らない
+"set writebackupを指定してもオプション 'backup' がオンでない限り、
+"バックアップは上書きに成功した後に削除される。
+set nowritebackup
+"バックアップ/スワップファイルを作成する/しない
+set nobackup
+set noswapfile
+"再読込、vim終了後も継続するアンドゥ(7.3)
+if version >= 703
+  "Persistent undoを有効化(7.3)
+  "set undofile
+  "アンドゥの保存場所(7.3)
+  "set undodir=.
+endif
+"viminfoを作成しない
+"set viminfo=
+"クリップボードを共有
+set clipboard+=unnamed
+"8進数を無効にする。<C-a>,<C-x>に影響する
+set nrformats-=octal
+"キーコードやマッピングされたキー列が完了するのを待つ時間(ミリ秒)
+set timeoutlen=3500
+"編集結果非保存のバッファから、新しいバッファを開くときに警告を出さない
+set hidden
+"ヒストリの保存数
+set history=50
+"日本語の行の連結時には空白を入力しない
+set formatoptions+=mM
+"Visual blockモードでフリーカーソルを有効にする
+set virtualedit=block
+"カーソルキーで行末／行頭の移動可能に設定
+set whichwrap=b,s,h,l,[,],<,>
+"バックスペースでインデントや改行を削除できるようにする
+set backspace=indent,eol,start
+"□や○の文字があってもカーソル位置がずれないようにする
+set ambiwidth=double
+"コマンドライン補完するときに強化されたものを使う
+set wildmenu
+"マウスを有効にする
+if has('mouse')
+  set mouse=a
+endif
+"pluginを使用可能にする
+filetype plugin indent on
+
+"----------------------------------------
+" 検索
+"----------------------------------------
+"検索の時に大文字小文字を区別しない
+"ただし大文字小文字の両方が含まれている場合は大文字小文字を区別する
+set ignorecase
+set smartcase
+"検索時にファイルの最後まで行ったら最初に戻る
+set wrapscan
+"インクリメンタルサーチを使用しない
+set noincsearch
+"検索文字の強調表示
+set hlsearch
+"w,bの移動で認識する文字
+"set iskeyword=a-z,A-Z,48-57,_,.,-,>
+"vimgrep をデフォルトのgrepとする場合internal
+"set grepprg=internal
+
+"----------------------------------------
+" 表示設定
+"----------------------------------------
+"スプラッシュ(起動時のメッセージ)を表示しない
+set shortmess+=I
+"エラー時の音とビジュアルベルの抑制(gvimは.gvimrcで設定)
+set noerrorbells
+set novisualbell
+set visualbell t_vb=
+"マクロ実行中などの画面再描画を行わない
+"set lazyredraw
+"Windowsでディレクトリパスの区切り文字表示に / を使えるようにする
+set shellslash
+"行番号表示
+set number
+"括弧の対応表示時間
+set showmatch matchtime=1
+"タブを設定
+set ts=4 sw=4 sts=4
+"自動的にインデントする
+set autoindent
+"賢いインデント
+set smartindent
+"さらに賢いインデント
+set cindent
+"Cインデントの設定
+set cinoptions+=:0
+"タイトルを表示
+set title
+"ルーラーを表示
+set ruler
+"コマンドラインの高さ (gvimはgvimrcで指定)
+set cmdheight=2
+set laststatus=2
+"コマンドをステータス行に表示
+set showcmd
+"一行の文字数を制限する
+set textwidth=80
+"一行が長過ぎたら折り返す
+set wrap
+"一行の制限文字数のところをハイライト
+"set colorcolumn=80
+"画面最後の行をできる限り表示する
+set display=lastline
+"折りたたみ関係
+"setl foldmethod=indent
+"setl foldlevel=99
+"Tab、行末の半角スペースを明示的に表示する
+"set list
+"set listchars=tab:>- ,trail:-
+
+" ハイライトを有効にする
+if &t_Co > 2 || has('gui_running')
+  syntax on
 endif
 
-set backspace=indent,eol,start
+"コメントをハイライトする
+highlight Comment ctermfg=DarkCyan
+"ステータスラインの色を変更
+highlight StatusLine   term=NONE cterm=NONE ctermfg=black ctermbg=white
 
-" WildMenu
-set wildmenu
+"色テーマ設定
+"gvimの色テーマは.gvimrcで指定する
+colorscheme desert
 
-" mapping
+""""""""""""""""""""""""""""""
+"ステータスラインに文字コードやBOM、16進表示等表示
+"iconvが使用可能の場合、カーソル上の文字コードをエンコードに応じた表示にするFencB()を使用
+""""""""""""""""""""""""""""""
+if has('iconv')
+  set statusline=%<%f\ %m\ %r%h%w%{'['.(&fenc!=''?&fenc:&enc).(&bomb?':BOM':'').']['.&ff.']'}%=[0x%{FencB()}]\ (%v,%l)/%L%8P\ 
+else
+  set statusline=%<%f\ %m\ %r%h%w%{'['.(&fenc!=''?&fenc:&enc).(&bomb?':BOM':'').']['.&ff.']'}%=\ (%v,%l)/%L%8P\ 
+endif
+
+function! FencB()
+  let c = matchstr(getline('.'), '.', col('.') - 1)
+  let c = iconv(c, &enc, &fenc)
+  return s:Byte2hex(s:Str2byte(c))
+endfunction
+
+function! s:Str2byte(str)
+  return map(range(len(a:str)), 'char2nr(a:str[v:val])')
+endfunction
+
+function! s:Byte2hex(bytes)
+  return join(map(copy(a:bytes), 'printf("%02X", v:val)'), '')
+endfunction
+
+"----------------------------------------
+" diff/patch
+"----------------------------------------
+" diffの設定
+if has('win95') || has('win16') || has('win32') || has('win64')
+  set diffexpr=MyDiff()
+  function! MyDiff()
+    silent! let saved_sxq=&shellxquote
+    silent! set shellxquote=
+    let opt = '-a --binary '
+    if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif
+    if &diffopt =~ 'iwhite' | let opt = opt . '-b ' | endif
+    let arg1 = v:fname_in
+    if arg1 =~ ' ' | let arg1 = '"' . arg1 . '"' | endif
+    let arg2 = v:fname_new
+    if arg2 =~ ' ' | let arg2 = '"' . arg2 . '"' | endif
+    let arg3 = v:fname_out
+    if arg3 =~ ' ' | let arg3 = '"' . arg3 . '"' | endif
+    " let cmd = '!diff ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3
+    let cmd = '!""' . $VIM . '\diff" ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3 . '"'
+    silent exe cmd
+    silent! let &shellxquote = saved_sxq
+  endfunction
+endif
+"現バッファの差分表示(変更箇所の表示)
+command! DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis | wincmd p | diffthis
+"ファイルまたはバッファ番号を指定して差分表示。#なら裏バッファと比較
+command! -nargs=? -complete=file Diff if '<args>'=='' | browse vertical diffsplit|else| vertical diffsplit <args>|endif
+"パッチコマンド
+set patchexpr=MyPatch()
+function! MyPatch()
+   :call system($VIM."\\'.'patch -o " . v:fname_out . " " . v:fname_in . " < " . v:fname_diff)
+endfunction
+
+"----------------------------------------
+" ノーマルモード
+"----------------------------------------
+"ヘルプ検索
+nnoremap <F1> K
+"現在開いているvimスクリプトファイルを実行
+nnoremap <F8> :source %<CR>
+"強制全保存終了を無効化
+nnoremap ZZ <Nop>
+"カーソルをj k では表示行で移動する。物理行移動は<C-n>,<C-p>
+"キーボードマクロには物理行移動を推奨
+"h l はノーマルモードのみ行末、行頭を超えることが可能に設定(whichwrap) 
+" zvはカーソル位置の折り畳みを開くコマンド
+nnoremap <Down> gj
+nnoremap <Up>   gk
+nnoremap h <Left>zv
+nnoremap j gj
+nnoremap k gk
+nnoremap l <Right>zv
+
+"----------------------------------------
+" 挿入モード
+"----------------------------------------
+"TABを押した時に空白で代用
+set expandtab
+"行頭でTABを押した時、自動インデントする
+set smarttab
+"十字キーバグ解消
+imap OA <Up>
+imap OB <Down>
+imap OC <Right>
+imap OD <Left>
+imap [3~ <Delete>
+
+"----------------------------------------
+" ビジュアルモード
+"----------------------------------------
+
+"----------------------------------------
+" コマンドモード
+"----------------------------------------
+"Windowsのメモ帳ライクのマッピング
 map <C-A> ggVG
 map <C-X> "+x
 map <C-C> "+y
 map <C-V> "+gP
 map <C-S> :w
 map <C-F> :brows confirm e
-vnoremap y "+y
 
+"----------------------------------------
+" Vimスクリプト
+"----------------------------------------
+""""""""""""""""""""""""""""""
+"ファイルを開いたら前回のカーソル位置へ移動
+""""""""""""""""""""""""""""""
+augroup vimrcEx
+  autocmd!
+  autocmd BufReadPost *
+    \ if line("'\"") > 1 && line("'\"") <= line('$') |
+    \   exe "normal! g`\"" |
+    \ endif
+augroup END
 
-"----------------------------------------------------
-" backup
-"----------------------------------------------------
-" don't backup
-set nobackup
-" create backup before save
-set writebackup
+""""""""""""""""""""""""""""""
+"挿入モード時、ステータスラインの色を変更
+""""""""""""""""""""""""""""""
+let g:hi_insert = 'highlight StatusLine guifg=darkblue guibg=darkyellow gui=none ctermfg=blue ctermbg=yellow cterm=none'
 
-"----------------------------------------------------
-" search
-"----------------------------------------------------
-" remain searching history until 100
-set history=100
-" when search, tell capital
-set smartcase
-" search to end and return start
-set wrapscan
-" don't use incremental search
-set noincsearch
-
-"----------------------------------------------------
-" view
-"----------------------------------------------------
-" show title
-set title
-" show line number
-set number
-" show ruler
-set ruler
-" show tab '>---' and end of line '$'
-set list
-set listchars=tab:>-,trail:-
-" display incomplete commands
-set showcmd
-" always show status line
-set laststatus=2
-" display opposite parentheses
-set showmatch
-" set time which display opposite parentheses
-set matchtime=2
-" valid syntax highlight
-syntax on
-" valid highlight searching word
-set hlsearch
-" change comment color
-highlight Comment ctermfg=DarkCyan
-" command line supplement -> advanced
-set wildmenu
-" height command line area
-set cmdheight=2
-" don't show message when start up
-set shortmess+=I
-
-" limit one line length
-set textwidth=80
-" too long line is folded and showed in next line
-set wrap
-" highlight too long line
-set colorcolumn=80
-" show lastline
-set display=lastline
-" fold by indent
-setl foldmethod=indent
-" fold more than 99 level
-setl foldlevel=99
-
-" color of statusline
-highlight StatusLine   term=NONE cterm=NONE ctermfg=black ctermbg=white
-
-"----------------------------------------------------
-" indent
-"----------------------------------------------------
-" valid auto indent
-set autoindent
-" valid high-tech auto indent
-set smartindent
-" valid customizable auto indent
-set cindent
-" tab to num of blank
-set tabstop=4
-" tab to num of blank when edit
-set softtabstop=4
-" indent wide(num of blank)
-set shiftwidth=4
-" when press tab, input by blank
-set expandtab
-" in top of line, press tab and indent num of 'shiftwidth'
-set smarttab
-
-"----------------------------------------------------
-" auto command
-"----------------------------------------------------
-if has("win32")||has("win64")||has("win32unix")
-    if has("autocmd")
-        " valid plugin and indent by filetype
-        filetype plugin indent on
-        " memory where cursor is
-        autocmd BufReadPost *
-            \ if line("'\"") > 0 && line("'\"") <= line("$") |
-            \   exe "normal g`\"" |
-            \ endif
-    endif
+if has('syntax')
+  augroup InsertHook
+    autocmd!
+    autocmd InsertEnter * call s:StatusLine('Enter')
+    autocmd InsertLeave * call s:StatusLine('Leave')
+  augroup END
 endif
-"----------------------------------------------------
-" word encoding
-"----------------------------------------------------
-" terminal encoding
-set encoding=utf-8
-set termencoding=utf-8
-set fileencoding=utf-8
-" valid encoding
-set fileencodings=iso-2022-jp,cp932,euc-jp,utf-8
-" auto recognize encoding
-if &encoding !=# 'utf-8'
-    set encoding=japan
-    set fileencoding=japan
-endif
-if has('iconv')
-    let s:enc_euc = 'euc-jp'
-    let s:enc_jis = 'iso-2022-jp'
-    " check iconv in eucJP-ms
-    if iconv("\x87\x64\x87\x6a", 'cp932', 'eucjp-ms') ==# "\xad\xc5\xad\xcb"
-        let s:enc_euc = 'eucjp-ms'
-        let s:enc_jis = 'iso-2022-jp-3'
-    " check iconv in JISX0213
-    elseif iconv("\x87\x64\x87\x6a", 'cp932', 'euc-jisx0213') ==# "\xad\xc5\xad\xcb"
-        let s:enc_euc = 'euc-jisx0213'
-        let s:enc_jis = 'iso-2022-jp-3'
-    endif
-    " build fileencodings
-    if &encoding ==# 'utf-8'
-        let s:fileencodings_default = &fileencodings
-        let &fileencodings = s:enc_jis .','. s:enc_euc .',cp932'
-        let &fileencodings = &fileencodings .','. s:fileencodings_default
-        unlet s:fileencodings_default
-    else
-        let &fileencodings = &fileencodings .','. s:enc_jis
-        set fileencodings+=utf-8,ucs-2le,ucs-2
-        if &encoding =~# '^\(euc-jp\|euc-jisx0213\|eucjp-ms\)$'
-            set fileencodings+=cp932
-            set fileencodings-=euc-jp
-            set fileencodings-=euc-jisx0213
-            set fileencodings-=eucjp-ms
-            let &encoding = s:enc_euc
-            let &fileencoding = s:enc_euc
-        else
-            let &fileencodings = &fileencodings .','. s:enc_euc
-        endif
-    endif
-    " remove constant
-    unlet s:enc_euc
-    unlet s:enc_jis
-endif
-" if japanese isn't included, use encoding
-if has('autocmd')
-    function! AU_ReCheck_FENC()
-        if &fileencoding =~# 'iso-2022-jp' && search("[^\x01-\x7e]", 'n') == 0
-            let &fileencoding=&encoding
-        endif
-    endfunction
-    autocmd BufReadPost * call AU_ReCheck_FENC()
-endif
-" auto recognize return type
-set fileformats=unix,dos,mac
-" fix when irregular word
-if exists('&ambiwidth')
-    set ambiwidth=double
+if has('unix') && !has('gui_running')
+  " ESCでキー入力待ちになる対策
+  inoremap <silent> <ESC> <ESC>
 endif
 
-"----------------------------------------------------
-" other
-"----------------------------------------------------
-" synch clipbord
-set clipboard=unnamed
-" off vi interchange
-set nocompatible
-" don't save and show other file
-set hidden
-" don't stop cursor
-set whichwrap=b,s,h,l,<,>,[,]
+let s:slhlcmd = ''
+function! s:StatusLine(mode)
+  if a:mode == 'Enter'
+    silent! let s:slhlcmd = 'highlight ' . s:GetHighlight('StatusLine')
+    silent exec g:hi_insert
+  else
+    highlight clear StatusLine
+    silent exec s:slhlcmd
+    redraw
+  endif
+endfunction
 
+function! s:GetHighlight(hi)
+  redir => hl
+  exec 'highlight '.a:hi
+  redir END
+  let hl = substitute(hl, '[\r\n]', '', 'g')
+  let hl = substitute(hl, 'xxx', '', '')
+  return hl
+endfunction
+
+""""""""""""""""""""""""""""""
+"全角スペースを表示
+""""""""""""""""""""""""""""""
+"コメント以外で全角スペースを指定しているので、scriptencodingと、
+"このファイルのエンコードが一致するよう注意！
+"強調表示されない場合、ここでscriptencodingを指定するとうまくいく事があります。
+"scriptencoding utf-8
+
+"デフォルトのZenkakuSpaceを定義
+function! ZenkakuSpace()
+  highlight ZenkakuSpace cterm=underline ctermfg=darkgrey gui=underline guifg=darkgrey
+endfunction
+
+if has('syntax')
+  augroup ZenkakuSpace
+    autocmd!
+    " ZenkakuSpaceをカラーファイルで設定するなら次の行は削除
+    autocmd ColorScheme       * call ZenkakuSpace()
+    " 全角スペースのハイライト指定
+    autocmd VimEnter,WinEnter * match ZenkakuSpace /　/
+  augroup END
+  call ZenkakuSpace()
+endif
+
+""""""""""""""""""""""""""""""
+"grep,tagsのためカレントディレクトリをファイルと同じディレクトリに移動する
+""""""""""""""""""""""""""""""
+if exists('+autochdir')
+  "autochdirがある場合カレントディレクトリを移動
+  set autochdir
+else
+  "autochdirが存在しないが、カレントディレクトリを移動したい場合
+  au BufEnter * execute ":silent! lcd " . escape(expand("%:p:h"), ' ')
+endif
+
+""""""""""""""""""""""""""""""
+"Windowsで内部エンコーディングがcp932以外の場合
+"makeのメッセージが化けるのを回避
+""""""""""""""""""""""""""""""
+if has('win32') || has('win64') || has('win95') || has('win16')
+  au QuickfixCmdPost make call QFixCnv('cp932')
+endif
+
+function! QFixCnv(enc)
+  if a:enc == &enc
+    return
+  endif
+  let qflist = getqflist()
+  for i in qflist
+    let i.text = iconv(i.text, a:enc, &enc)
+  endfor
+  call setqflist(qflist)
+endfunction
+
+"----------------------------------------
+" 各種プラグイン設定
+"----------------------------------------
 " vundle
-set rtp+=~/.vim/vundle.git/
+set rtp+=$MY_VIMRUNTIME/vundle.git/
 filetype off
-call vundle#rc()
-Bundle 'mitechie/pyflakes-pathogen'
-Bundle 'sontek/rope-vim'
-Bundle 'lambdalisue/vim-django-support'
-filetype plugin indent on
+"call vundle#rc()
+"Bundle 'mitechie/pyflakes-pathogen'
+"Bundle 'sontek/rope-vim'
+"Bundle 'lambdalisue/vim-django-support'
+
+"----------------------------------------
+" 一時設定
+"----------------------------------------
