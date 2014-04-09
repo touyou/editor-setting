@@ -1,0 +1,12 @@
+gist-vim
+gitv
+gundo.vim
+neobundle.vim
+syntastic
+vim-django-support
+vim-fugitive
+vim-indent-guides
+vim-quickrun
+vim-virtualenv
+vimproc
+webapi-vim

@@ -1,4 +1,5 @@
 (cd "~/")
+(add-to-list 'load-path "~/.emacs.d/elisp")
 
 ;============================================================================
 ; language coding system
@@ -16,14 +17,16 @@
 ; font
 ;============================================================================
 (set-default-font "Consolas 12")
-(set-fontset-font (frame-parameter nil 'font)
+(if (display-graphic-p)
+    (set-fontset-font (frame-parameter nil 'font)
                   'japanese-jisx0208
                   '("KonatuTohaba"."unicode-bmp")
-                  )
-(set-fontset-font (frame-parameter nil 'font)
+                  ))
+(if (display-graphic-p)
+    (set-fontset-font (frame-parameter nil 'font)
                   'katakana-jisx0201
                   '("KonatuTohaba"."unicode-bmp")
-                  )
+                  ))
 
 ;============================================================================
 ; frame
@@ -40,23 +43,22 @@
   (when (require 'color-theme-solarized)
     (color-theme-solarized-dark)))
 (setq initial-frame-alist
-	  (append
-	   '((top . 50)
-		 (left . 50)
-		 (width . 80)
-		 (height . 35))
-	   initial-frame-alist))
+      (append
+       '((top . 50)
+         (left . 50)
+         (width . 80)
+         (height . 35))
+       initial-frame-alist))
 (setq default-frame-alist
-	  (append
-	   '((width . 80)
-		 (height . 35))
-	   default-frame-alist))
+      (append
+       '((width . 80)
+         (height . 35))
+       default-frame-alist))
 
 ;============================================================================
 ; input
 ;============================================================================
 (setq-default tab-width 4)
-(setq default-tab-width 4)
 (setq tab-stop-list '(4 8 12 16 20 24 28 32 36 40 44 48 52 56 60
                         64 68 72 76 80 84 88 92 96 100 104 108 112 116 120))
 (global-set-key (kbd "(") 'skeleton-pair-insert-maybe)
@@ -68,7 +70,8 @@
 ; misc
 ;============================================================================
 (mouse-wheel-mode t)
-(setq line-number-mode t)
+(if (display-graphic-p)
+    (setq line-number-mode t))
 (auto-compression-mode t)
 (set-scroll-bar-mode 'right)
 (global-set-key "\C-z" 'undo)
@@ -85,30 +88,32 @@
 (setq c-auto-newline t)
 
 ;; linum
-(require 'linum)
-(global-linum-mode)
+(if (display-graphic-p)
+    (require 'linum)
+    (global-linum-mode)
+)
 
 ;; tabbar
 (require 'cl)
 (when (require 'tabbar nil t)
   (setq tabbar-buffer-groups-function
-		(lambda (b) (list "All Buffers")))
+        (lambda (b) (list "All Buffers")))
   (setq tabbar-buffer-list-function
-		(lambda ()
-		  (remove-if
-		   (lambda (buffer)
-			 (find (aref (buffer-name buffer) 0) " *"))
-		   (buffer-list))))
+        (lambda ()
+          (remove-if
+           (lambda (buffer)
+             (find (aref (buffer-name buffer) 0) " *"))
+           (buffer-list))))
   (tabbar-mode))
 (dolist (func '(tabbar-mode tabbar-forward-tab tabbar-forward-group tabbar-backward-tab tabbar-backward-group))
   (autoload func "tabbar" "Tabs at the top of buffers and easy control-tab navigation"))
 (defmacro defun-prefix-alt (name on-no-prefix on-prefix &optional do-always)
   `(defun ,name (arg)
-	 (interactive "P")
-	 ,do-always
-	 (if (equal nil arg)
-		 ,on-no-prefix
-	   ,on-prefix)))
+     (interactive "P")
+     ,do-always
+     (if (equal nil arg)
+         ,on-no-prefix
+       ,on-prefix)))
 (defun-prefix-alt shk-tabbar-next (tabbar-forward-tab) (tabbar-forward-group) (tabbar-mode 1))
 (defun-prefix-alt shk-tabbar-prev (tabbar-backward-tab) (tabbar-backward-group) (tabbar-mode 1))
 (global-set-key [(control tab)] 'shk-tabbar-next)
@@ -149,11 +154,17 @@
 (setq-default indent-tabs-mode nil)
 (setq-default tab-width 4)
 
+(set x-select-enable-clipboard t)
+
 ;============================================================================
 ; IME
 ;============================================================================
-(setq default-input-method "W32-IME")
-(setq w32-ime-buffer-switch-p nil)
+(cond
+    ((eq window-system 'w32)
+        (setq default-input-method "W32-IME")
+        (setq w32-ime-buffer-switch-p nil)
+    )
+)
 
 ;============================================================================
 ; autocomplete
@@ -176,17 +187,17 @@
 ; programming-mode
 ;============================================================================
 (add-hook 'python-mode-hock
-		  (lambda ()
-			(define-key python-mode-map "\"" 'electric-pair)
-			(define-key python-mode-map "\'" 'electric-pair)
-			(define-key python-mode-map "(" 'electric-pair)
-			(define-key python-mode-map "[" 'electric-pair)
-			(define-key python-mode-map "{" 'electric-pair)))
+          (lambda ()
+            (define-key python-mode-map "\"" 'electric-pair)
+            (define-key python-mode-map "\'" 'electric-pair)
+            (define-key python-mode-map "(" 'electric-pair)
+            (define-key python-mode-map "[" 'electric-pair)
+            (define-key python-mode-map "{" 'electric-pair)))
 (defun electric-pair ()
   "Insert character pair without sournding spaces"
   (interactive)
   (let (parens-require-spaces)
-	(insert-pair)))
+    (insert-pair)))
 (add-hook 'python-mode-hock '(lambda ()
                                (define-key python-mode-map "\C-m" 'newline-and-indent)))
 
@@ -199,3 +210,21 @@
              (c-set-offset 'arglist-close 0)
              (define-key c-mode-base-map "\C-m" 'newline-and-indent)
 ))
+
+;;; flymake for python
+;(add-hook 'find-file-hook 'flymake-find-file-hook)
+;(when (load "flymake" t)
+;  (defun flymake-pyflakes-init ()
+;    (let* ((temp-file (flymake-init-create-temp-buffer-copy
+;                       'flymake-create-temp-inplace))
+;           (local-file (file-relative-name
+;                        temp-file
+;                        (file-name-directory buffer-file-name))))
+;      (list "pycheckers"  (list local-file))))
+;  (add-to-list 'flymake-allowed-file-name-masks
+;               '("\\.py\\'" flymake-pyflakes-init)))
+;(load-library "flymake-cursor")
+;(global-set-key [f10] 'flymake-goto-prev-error)
+;(global-set-key [f11] 'flymake-goto-next-error)
+;
+(require 'magit)
