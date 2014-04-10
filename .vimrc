@@ -1,4 +1,14 @@
-﻿set nocompatible
+"------------------------------------------------------------------------------
+" .vimrc edited by touyou
+" 趣旨：
+"   + Windows/Ubuntu、および将来的にはMacでも共通して使えるようにする
+"   + プログラミングに関して快適であるようにする
+"   + プラグインは最低限かつ簡易な管理方法を徹底
+"   + 検索はあまり使わないのでとりあえず適当な感じに
+"   + 補完は今のところ邪魔でしかないのでとりあえずコメントアウト中
+" vimに関しては素人なのでなにかあれば指摘お願いします。
+"------------------------------------------------------------------------------
+set nocompatible
 scriptencoding utf-8
 set fileformat=unix
 "scriptencodingと、このファイルのエンコーディングが一致するよう注意！
@@ -17,7 +27,7 @@ elseif isdirectory($HOME . '\vimfiles')
   let $MY_VIMRUNTIME = $HOME.'\vimfiles'
 elseif isdirectory($VIM . '\vimfiles')
   let $MY_VIMRUNTIME = $VIM.'\vimfiles'
-endif 
+endif
 "ランタイムパスを通す必要のあるプラグインを使用する場合
 "$MY_VIMRUNTIMEを使用すると Windows/Linuxで切り分ける必要が無くなります。 
 "例) vimfiles/qfixapp (Linuxでは~/.vim/qfixapp)にランタイムパスを通す場合 
@@ -36,145 +46,351 @@ source $MY_VIMRUNTIME/plugin/encode.vim
 "変更後にもscriptencodingを指定しておくと問題が起きにくくなります。
 scriptencoding utf-8
 
-"----------------------------------------
-" システム設定
-"----------------------------------------
-"mswin.vimを読み込む
-"source $VIMRUNTIME/mswin.vim
-"behave mswin
+"------------------------------------------------------------------------------
+" 以下、http://lambdalisue.hatenablog.com/entry/2013/06/23/07134の一部を改変したもの
+"------------------------------------------------------------------------------
 
-"ファイルの上書きの前にバックアップを作る/作らない
-"set writebackupを指定してもオプション 'backup' がオンでない限り、
-"バックアップは上書きに成功した後に削除される。
-set nowritebackup
-"バックアップ/スワップファイルを作成する/しない
-set nobackup
-set noswapfile
-"再読込、vim終了後も継続するアンドゥ(7.3)
-if version >= 703
-  "Persistent undoを有効化(7.3)
-  "set undofile
-  "アンドゥの保存場所(7.3)
-  "set undodir=.
+" release autogroup in MyAutoCmd
+augroup MyAutoCmd
+  autocmd!
+augroup END
+
+"------------------------------------------------
+" NeoBundle関係
+"------------------------------------------------
+let s:noplugin = 0
+let s:bundle_root = expand('$MY_VIMRUNTIME/bundle')
+let s:neobundle_root = s:bundle_root . '/neobundle.vim'
+if !isdirectory(s:neobundle_root) || v:version < 702
+    " NeoBundleが存在しない、もしくはVimのバージョンが古い場合はプラグインを一切
+    " 読み込まない
+    let s:noplugin = 1
+else
+    " NeoBundleを'runtimepath'に追加し初期化を行う
+    if has('vim_starting')
+        execute "set runtimepath+=" . s:neobundle_root
+    endif
+    call neobundle#rc(s:bundle_root)
+
+    " NeoBundle自身をNeoBundleで管理させる
+    NeoBundleFetch 'Shougo/neobundle.vim'
+
+    " 非同期通信を可能にする
+    " 'build'が指定されているのでインストール時に自動的に
+    " 指定されたコマンドが実行され vimproc がコンパイルされる
+    NeoBundle "Shougo/vimproc", {
+        \ "build": {
+        \   "windows"   : "make -f make_mingw32.mak",
+        \   "cygwin"    : "make -f make_cygwin.mak",
+        \   "mac"       : "make -f make_mac.mak",
+        \   "unix"      : "make -f make_unix.mak",
+        \ }}
+
+    " 以下プラグインの羅列
+    " Git関係
+    NeoBundleLazy "mattn/gist-vim", {
+        \ "depends": ["mattn/webapi-vim"],
+        \ "autoload": {
+        \   "commands": ["Gist"],
+        \ }}
+    " vim-fugitiveは'autocmd'多用してるっぽくて遅延ロード不可
+    NeoBundle "tpope/vim-fugitive"
+    NeoBundleLazy "gregsexton/gitv", {
+        \ "depends": ["tpope/vim-fugitive"],
+        \ "autoload": {
+        \   "commands": ["Gitv"],
+        \ }}
+
+    " 補完
+    "if has('lua') && v:version >= 703 && has('patch885')
+    "    NeoBundleLazy "Shougo/neocomplete.vim", {
+    "        \ "autoload": {
+    "        \   "insert": 1,
+    "        \ }}
+    "    " 2013-07-03 14:30 NeoComplCacheに合わせた
+    "    let g:neocomplete#enable_at_startup = 1
+    "    let s:hooks = neobundle#get_hooks("neocomplete.vim")
+    "    function! s:hooks.on_source(bundle)
+    "        let g:acp_enableAtStartup = 0
+    "        let g:neocomplet#enable_smart_case = 1
+    "        " NeoCompleteを有効化
+    "        " NeoCompleteEnable
+    "    endfunction
+    "else
+    "    NeoBundleLazy "Shougo/neocomplcache.vim", {
+    "        \ "autoload": {
+    "        \   "insert": 1,
+    "        \ }}
+    "    let g:neocomplcache_enable_at_startup = 1
+    "    let s:hooks = neobundle#get_hooks("neocomplcache.vim")
+    "    function! s:hooks.on_source(bundle)
+    "        let g:acp_enableAtStartup = 0
+    "        let g:neocomplcache_enable_smart_case = 1
+    "        " NeoComplCacheを有効化
+    "        " NeoComplCacheEnable 
+    "    endfunction
+    "endif
+
+    " コード入力の簡略化
+    "NeoBundleLazy "Shougo/neosnippet.vim", {
+    "      \ "depends": ["honza/vim-snippets"],
+    "      \ "autoload": {
+    "      \   "insert": 1,
+    "      \ }}
+    "let s:hooks = neobundle#get_hooks("neosnippet.vim")
+    "function! s:hooks.on_source(bundle)
+    "  " Plugin key-mappings.
+    "  imap <C-k>     <Plug>(neosnippet_expand_or_jump)
+    "  smap <C-k>     <Plug>(neosnippet_expand_or_jump)
+    "  xmap <C-k>     <Plug>(neosnippet_expand_target)
+    "  " SuperTab like snippets behavior.
+    "  imap <expr><TAB> neosnippet#expandable_or_jumpable() ?
+    "  \ "\<Plug>(neosnippet_expand_or_jump)"
+    "  \: pumvisible() ? "\<C-n>" : "\<TAB>"
+    "  smap <expr><TAB> neosnippet#expandable_or_jumpable() ?
+    "  \ "\<Plug>(neosnippet_expand_or_jump)"
+    "  \: "\<TAB>"
+    "  " For snippet_complete marker.
+    "  if has('conceal')
+    "    set conceallevel=2 concealcursor=i
+    "  endif
+    "  " Enable snipMate compatibility feature.
+    "  let g:neosnippet#enable_snipmate_compatibility = 1
+    "  " Tell Neosnippet about the other snippets
+    "  let g:neosnippet#snippets_directory=s:bundle_root . '/vim-snippets/snippets'
+    "endfunction
+
+    " インデントの可視化
+    NeoBundle "nathanaelkane/vim-indent-guides"
+    " let g:indent_guides_enable_on_vim_startup = 1 2013-06-24 10:00 削除
+    let s:hooks = neobundle#get_hooks("vim-indent-guides")
+    function! s:hooks.on_source(bundle)
+      let g:indent_guides_guide_size = 1
+      " IndentGuidesEnable " 2013-06-24 10:00 追記
+    endfunction
+
+    " Undoを便利にする
+    NeoBundleLazy "sjl/gundo.vim", {
+          \ "autoload": {
+          \   "commands": ['GundoToggle'],
+          \}}
+    nnoremap <Leader>g :GundoToggle<CR>
+
+    " プログラムの即時実行
+    NeoBundleLazy "thinca/vim-quickrun", {
+          \ "autoload": {
+          \   "mappings": [['nxo', '<Plug>(quickrun)']]
+          \ }}
+    nmap <Leader>r <Plug>(quickrun)
+    let s:hooks = neobundle#get_hooks("vim-quickrun")
+    function! s:hooks.on_source(bundle)
+        let g:quickrun_config = {
+              \ "*": {"runner": "remote/vimproc"},
+              \ }
+    endfunction
+
+    " 構文間違え指摘
+    NeoBundle "scrooloose/syntastic", {
+      \ "build": {
+      \   "mac": ["pip install flake8", "npm -g install coffeelint"],
+      \   "unix": ["pip install flake8", "npm -g install coffeelint"],
+      \ }}
+
+    " virtualenvとdjango問題の解決
+    " Djangoを正しくVimで読み込めるようにする
+    NeoBundleLazy "lambdalisue/vim-django-support", {
+          \ "autoload": {
+          \   "filetypes": ["python", "python3", "djangohtml"]
+          \ }}
+    " Vimで正しくvirtualenvを処理できるようにする
+    NeoBundleLazy "jmcantrell/vim-virtualenv", {
+          \ "autoload": {
+          \   "filetypes": ["python", "python3", "djangohtml"]
+          \ }}
+
+    " Python補完・リファクタリング・リファレンス環境
+    "NeoBundleLazy "davidhalter/jedi-vim", {
+    "      \ "autoload": {
+    "      \   "filetypes": ["python", "python3", "djangohtml"],
+    "      \ },
+    "      \ "build": {
+    "      \   "mac": "pip install jedi",
+    "      \   "unix": "pip install jedi",
+    "      \ }}
+    "let s:hooks = neobundle#get_hooks("jedi-vim")
+    "function! s:hooks.on_source(bundle)
+    "    " jediにvimの設定を任せると'completeopt+=preview'するので
+    "    " 自動設定機能をOFFにし手動で設定を行う
+    "    let g:jedi#auto_vim_configuration = 0
+    "     " 補完の最初の項目が選択された状態だと使いにくいためオフにする
+    "    let g:jedi#popup_select_first = 0
+    "    " quickrunと被るため大文字に変更
+    "    let g:jedi#rename_command = '<Leader>R'
+    "    " gundoと被るため大文字に変更 (2013-06-24 10:00 追記）
+    "    let g:jedi#goto_assignments_command = '<Leader>G'
+    "endfunction
+
+    " インストールされていないプラグインのチェックおよびダウンロード
+    NeoBundleCheck
 endif
-"viminfoを作成しない
-"set viminfo=
-"クリップボードを共有
-set clipboard+=unnamed
-"8進数を無効にする。<C-a>,<C-x>に影響する
-set nrformats-=octal
-"キーコードやマッピングされたキー列が完了するのを待つ時間(ミリ秒)
-set timeoutlen=3500
-"編集結果非保存のバッファから、新しいバッファを開くときに警告を出さない
-set hidden
-"ヒストリの保存数
-set history=50
-"日本語の行の連結時には空白を入力しない
-set formatoptions+=mM
-"Visual blockモードでフリーカーソルを有効にする
-set virtualedit=block
-"カーソルキーで行末／行頭の移動可能に設定
-set whichwrap=b,s,h,l,[,],<,>
-"バックスペースでインデントや改行を削除できるようにする
-set backspace=indent,eol,start
-"□や○の文字があってもカーソル位置がずれないようにする
-set ambiwidth=double
-"コマンドライン補完するときに強化されたものを使う
-set wildmenu
-"マウスを有効にする
-if has('mouse')
-  set mouse=a
-endif
-"pluginを使用可能にする
+
+" ファイルタイププラグインおよびインデントを有効化
+" これはNeoBundleによる処理が終了したあとに呼ばなければならない
 filetype plugin indent on
 
-"----------------------------------------
-" 検索
-"----------------------------------------
-"検索の時に大文字小文字を区別しない
-"ただし大文字小文字の両方が含まれている場合は大文字小文字を区別する
-set ignorecase
-set smartcase
-"検索時にファイルの最後まで行ったら最初に戻る
-set wrapscan
-"インクリメンタルサーチを使用しない
-set noincsearch
-"検索文字の強調表示
-set hlsearch
-"w,bの移動で認識する文字
-"set iskeyword=a-z,A-Z,48-57,_,.,-,>
-"vimgrep をデフォルトのgrepとする場合internal
-"set grepprg=internal
+"------------------------------------------------
+" 検索関係
+"------------------------------------------------
+set ignorecase          " 大文字小文字を区別しない
+set smartcase           " 検索文字に大文字がある場合は大文字小文字を区別
+set incsearch           " インクリメンタルサーチ（≒逐次検索）
+set hlsearch            " 検索マッチテキストをハイライト (2013-07-03 14:30 修正）
 
-"----------------------------------------
-" 表示設定
-"----------------------------------------
-"スプラッシュ(起動時のメッセージ)を表示しない
-set shortmess+=I
-"エラー時の音とビジュアルベルの抑制(gvimは.gvimrcで設定)
-set noerrorbells
-set novisualbell
-set visualbell t_vb=
-"マクロ実行中などの画面再描画を行わない
-"set lazyredraw
-"Windowsでディレクトリパスの区切り文字表示に / を使えるようにする
-set shellslash
-"行番号表示
-set number
-"括弧の対応表示時間
-set showmatch matchtime=1
-"タブを設定
-set ts=4 sw=4 sts=4
-"自動的にインデントする
-set autoindent
-"賢いインデント
-set smartindent
-"さらに賢いインデント
-set cindent
-"Cインデントの設定
-set cinoptions+=:0
-"タイトルを表示
-set title
-"ルーラーを表示
-set ruler
-"コマンドラインの高さ (gvimはgvimrcで指定)
-set cmdheight=2
-set laststatus=2
-"コマンドをステータス行に表示
-set showcmd
-"一行の文字数を制限する
-set textwidth=80
-"一行が長過ぎたら折り返す
-set wrap
-"一行の制限文字数のところをハイライト
-"set colorcolumn=80
-"画面最後の行をできる限り表示する
-set display=lastline
-"折りたたみ関係
-"setl foldmethod=indent
-"setl foldlevel=99
-"Tab、行末の半角スペースを明示的に表示する
-"set list
-"set listchars=tab:>- ,trail:-
+set wrapscan            " 検索時にファイルの最後まで行ったら最初に戻る
 
-" ハイライトを有効にする
-if &t_Co > 2 || has('gui_running')
-  syntax on
+" バックスラッシュやクエスチョンを状況に合わせ自動的にエスケープ
+cnoremap <expr> / getcmdtype() == '/' ? '\/' : '/'
+cnoremap <expr> ? getcmdtype() == '?' ? '\?' : '?'
+
+"------------------------------------------------
+" 編集関係
+"------------------------------------------------
+set shiftround          " '<'や'>'でインデントする際に'shiftwidth'の倍数に丸める
+set infercase           " 補完時に大文字小文字を区別しない
+set virtualedit=all     " カーソルを文字が存在しない部分でも動けるようにする
+set hidden              " バッファを閉じる代わりに隠す（Undo履歴を残すため）
+set switchbuf=useopen   " 新しく開く代わりにすでに開いてあるバッファを開く
+set showmatch           " 対応する括弧などをハイライト表示する
+set matchtime=3         " 対応括弧のハイライト表示を3秒にする
+
+set ts=4 sw=4 sts=4     " タブを設定
+set autoindent          " 自動的にインデントする
+set smartindent         " 賢いインデント
+set cindent             " さらに賢いインデント
+set cinoptions+=:0      " Ｃインデントの設定
+set expandtab           " TABを押した時に空白で代用
+set smarttab            " 行頭でTABを押した時、自動インデントする
+
+" 対応括弧に'<'と'>'のペアを追加
+set matchpairs& matchpairs+=<:>
+
+" バックスペースでなんでも消せるようにする
+set backspace=indent,eol,start
+
+" クリップボードをデフォルトのレジスタとして指定。後にYankRingを使うので
+" 'unnamedplus'が存在しているかどうかで設定を分ける必要がある
+if has('unnamedplus')
+    " set clipboard& clipboard+=unnamedplus " 2013-07-03 14:30 unnamed 追加
+    set clipboard& clipboard+=unnamedplus,unnamed 
+else
+    " set clipboard& clipboard+=unnamed,autoselect 2013-06-24 10:00 autoselect 削除
+    set clipboard& clipboard+=unnamed
 endif
 
-"コメントをハイライトする
-highlight Comment ctermfg=DarkCyan
-"ステータスラインの色を変更
-highlight StatusLine   term=NONE cterm=NONE ctermfg=black ctermbg=white
+" Swapファイル？Backupファイル？前時代的すぎ
+" なので全て無効化する
+set nowritebackup
+set nobackup
+set noswapfile
 
-"色テーマ設定
-"gvimの色テーマは.gvimrcで指定する
-colorscheme desert
+"------------------------------------------------
+" 表示関係
+"------------------------------------------------
+set list                " 不可視文字の可視化
+set number              " 行番号の表示
+set wrap                " 長いテキストの折り返し
+set textwidth=0         " 自動的に改行が入るのを無効化
+set colorcolumn=80      " その代わり80文字目にラインを入れる
 
-""""""""""""""""""""""""""""""
-"ステータスラインに文字コードやBOM、16進表示等表示
-"iconvが使用可能の場合、カーソル上の文字コードをエンコードに応じた表示にするFencB()を使用
-""""""""""""""""""""""""""""""
+set shortmess+=I        " 起動時のメッセージを表示しない
+set shellslash          " Windowsでディレクトリパスの区切り文字表示に / を使えるようにする
+set title               " タイトルを表示
+set ruler               " ルーラーを表示
+set cmdheight=2         " コマンドラインの高さ
+set laststatus=2
+set showcmd             " コマンドをステータスラインに表示
+syntax on               " ハイライトシンタックスをonに
+
+" 前時代的スクリーンベルを無効化
+set t_vb=
+set novisualbell
+
+" デフォルト不可視文字は美しくないのでUnicodeで綺麗に
+set listchars=tab:»-,trail:-,extends:»,precedes:«,nbsp:%,eol:↲
+
+"------------------------------------------------
+" マクロおよびキー設定
+"------------------------------------------------
+"----------------------------------------
+" ノーマルモード(旧版より引き継ぎ）
+"----------------------------------------
+"ヘルプ検索
+nnoremap <F1> K
+"現在開いているvimスクリプトファイルを実行
+nnoremap <F8> :source %<CR>
+"強制全保存終了を無効化
+nnoremap ZZ <Nop>
+"カーソルをj k では表示行で移動する。物理行移動は<C-n>,<C-p>
+"キーボードマクロには物理行移動を推奨
+"h l はノーマルモードのみ行末、行頭を超えることが可能に設定(whichwrap) 
+" zvはカーソル位置の折り畳みを開くコマンド
+nnoremap <Down> gj
+nnoremap <Up>   gk
+nnoremap h <Left>zv
+nnoremap j gj
+nnoremap k gk
+nnoremap l <Right>zv
+"----------------------------------------
+" 挿入モード
+"----------------------------------------
+"十字キーバグ解消
+imap OA <Up>
+imap OB <Down>
+imap OC <Right>
+imap OD <Left>
+imap [3~ <Delete>
+"----------------------------------------
+" コマンドモード
+"----------------------------------------
+"Windowsのメモ帳ライクのマッピング
+map <C-A> ggVG
+map <C-X> "+x
+map <C-C> "+y
+map <C-V> "+gP
+map <C-S> :w
+map <C-F> :brows confirm e
+
+"------------------------------------------------
+" システム設定(旧版.vimrcより引き継ぎ)
+"------------------------------------------------
+" マウスを有効化
+if has('mouse')
+    set mouse=a
+endif
+" 8進数を無効にする。<C-a>,<C-x>に影響する
+set nrformats-=octal
+" キーコードやマッピングされたキー列が完了するのを待つ時間(ミリ秒)
+set timeoutlen=3500
+" ヒストリの保存数
+set history=50
+" 日本語の行の連結時には空白を入力しない
+set formatoptions+=mM
+" Visual blockモードでフリーカーソルを有効にする
+set virtualedit=block
+" カーソルキーで行末／行頭の移動可能に設定
+set whichwrap=b,s,h,l,[,],<,>
+" □や○の文字があってもカーソル位置がずれないようにする
+set ambiwidth=double
+" コマンドライン補完するときに強化されたものを使う
+set wildmenu
+
+"------------------------------------------------
+" その他(旧版.vimrc引き継ぎ)
+"------------------------------------------------
+"----------------------------------------
+" ステータスラインに文字コードやBOM、16進表示等表示
+" iconvが使用可能の場合、カーソル上の文字コードをエンコードに応じた表示にするFencB()を使用
+"----------------------------------------
 if has('iconv')
   set statusline=%<%f\ %m\ %r%h%w%{'['.(&fenc!=''?&fenc:&enc).(&bomb?':BOM':'').']['.&ff.']'}%=[0x%{FencB()}]\ (%v,%l)/%L%8P\ 
 else
@@ -194,151 +410,15 @@ endfunction
 function! s:Byte2hex(bytes)
   return join(map(copy(a:bytes), 'printf("%02X", v:val)'), '')
 endfunction
-
 "----------------------------------------
-" diff/patch
+" 全角スペースを表示
 "----------------------------------------
-" diffの設定
-if has('win95') || has('win16') || has('win32') || has('win64')
-  set diffexpr=MyDiff()
-  function! MyDiff()
-    silent! let saved_sxq=&shellxquote
-    silent! set shellxquote=
-    let opt = '-a --binary '
-    if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif
-    if &diffopt =~ 'iwhite' | let opt = opt . '-b ' | endif
-    let arg1 = v:fname_in
-    if arg1 =~ ' ' | let arg1 = '"' . arg1 . '"' | endif
-    let arg2 = v:fname_new
-    if arg2 =~ ' ' | let arg2 = '"' . arg2 . '"' | endif
-    let arg3 = v:fname_out
-    if arg3 =~ ' ' | let arg3 = '"' . arg3 . '"' | endif
-    " let cmd = '!diff ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3
-    let cmd = '!""' . $VIM . '\diff" ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3 . '"'
-    silent exe cmd
-    silent! let &shellxquote = saved_sxq
-  endfunction
-endif
-"現バッファの差分表示(変更箇所の表示)
-command! DiffOrig vert new | set bt=nofile | r # | 0d_ | diffthis | wincmd p | diffthis
-"ファイルまたはバッファ番号を指定して差分表示。#なら裏バッファと比較
-command! -nargs=? -complete=file Diff if '<args>'=='' | browse vertical diffsplit|else| vertical diffsplit <args>|endif
-"パッチコマンド
-set patchexpr=MyPatch()
-function! MyPatch()
-   :call system($VIM."\\'.'patch -o " . v:fname_out . " " . v:fname_in . " < " . v:fname_diff)
-endfunction
-
-"----------------------------------------
-" ノーマルモード
-"----------------------------------------
-"ヘルプ検索
-nnoremap <F1> K
-"現在開いているvimスクリプトファイルを実行
-nnoremap <F8> :source %<CR>
-"強制全保存終了を無効化
-nnoremap ZZ <Nop>
-"カーソルをj k では表示行で移動する。物理行移動は<C-n>,<C-p>
-"キーボードマクロには物理行移動を推奨
-"h l はノーマルモードのみ行末、行頭を超えることが可能に設定(whichwrap) 
-" zvはカーソル位置の折り畳みを開くコマンド
-nnoremap <Down> gj
-nnoremap <Up>   gk
-nnoremap h <Left>zv
-nnoremap j gj
-nnoremap k gk
-nnoremap l <Right>zv
-
-"----------------------------------------
-" 挿入モード
-"----------------------------------------
-"TABを押した時に空白で代用
-set expandtab
-"行頭でTABを押した時、自動インデントする
-set smarttab
-"十字キーバグ解消
-imap OA <Up>
-imap OB <Down>
-imap OC <Right>
-imap OD <Left>
-imap [3~ <Delete>
-
-"----------------------------------------
-" ビジュアルモード
-"----------------------------------------
-
-"----------------------------------------
-" コマンドモード
-"----------------------------------------
-"Windowsのメモ帳ライクのマッピング
-map <C-A> ggVG
-map <C-X> "+x
-map <C-C> "+y
-map <C-V> "+gP
-map <C-S> :w
-map <C-F> :brows confirm e
-
-"----------------------------------------
-" Vimスクリプト
-"----------------------------------------
-""""""""""""""""""""""""""""""
-"ファイルを開いたら前回のカーソル位置へ移動
-""""""""""""""""""""""""""""""
-augroup vimrcEx
-  autocmd!
-  autocmd BufReadPost *
-    \ if line("'\"") > 1 && line("'\"") <= line('$') |
-    \   exe "normal! g`\"" |
-    \ endif
-augroup END
-
-""""""""""""""""""""""""""""""
-"挿入モード時、ステータスラインの色を変更
-""""""""""""""""""""""""""""""
-let g:hi_insert = 'highlight StatusLine guifg=darkblue guibg=darkyellow gui=none ctermfg=blue ctermbg=yellow cterm=none'
-
-if has('syntax')
-  augroup InsertHook
-    autocmd!
-    autocmd InsertEnter * call s:StatusLine('Enter')
-    autocmd InsertLeave * call s:StatusLine('Leave')
-  augroup END
-endif
-if has('unix') && !has('gui_running')
-  " ESCでキー入力待ちになる対策
-  inoremap <silent> <ESC> <ESC>
-endif
-
-let s:slhlcmd = ''
-function! s:StatusLine(mode)
-  if a:mode == 'Enter'
-    silent! let s:slhlcmd = 'highlight ' . s:GetHighlight('StatusLine')
-    silent exec g:hi_insert
-  else
-    highlight clear StatusLine
-    silent exec s:slhlcmd
-    redraw
-  endif
-endfunction
-
-function! s:GetHighlight(hi)
-  redir => hl
-  exec 'highlight '.a:hi
-  redir END
-  let hl = substitute(hl, '[\r\n]', '', 'g')
-  let hl = substitute(hl, 'xxx', '', '')
-  return hl
-endfunction
-
-""""""""""""""""""""""""""""""
-"全角スペースを表示
-""""""""""""""""""""""""""""""
-"コメント以外で全角スペースを指定しているので、scriptencodingと、
-"このファイルのエンコードが一致するよう注意！
-"強調表示されない場合、ここでscriptencodingを指定するとうまくいく事があります。
+" コメント以外で全角スペースを指定しているので、scriptencodingと、
+" このファイルのエンコードが一致するよう注意！
+" 強調表示されない場合、ここでscriptencodingを指定するとうまくいく事があります。
 "scriptencoding utf-8
 
-"デフォルトのZenkakuSpaceを定義
+" デフォルトのZenkakuSpaceを定義
 function! ZenkakuSpace()
   highlight ZenkakuSpace cterm=underline ctermfg=darkgrey gui=underline guifg=darkgrey
 endfunction
@@ -353,22 +433,10 @@ if has('syntax')
   augroup END
   call ZenkakuSpace()
 endif
-
-""""""""""""""""""""""""""""""
-"grep,tagsのためカレントディレクトリをファイルと同じディレクトリに移動する
-""""""""""""""""""""""""""""""
-if exists('+autochdir')
-  "autochdirがある場合カレントディレクトリを移動
-  set autochdir
-else
-  "autochdirが存在しないが、カレントディレクトリを移動したい場合
-  au BufEnter * execute ":silent! lcd " . escape(expand("%:p:h"), ' ')
-endif
-
-""""""""""""""""""""""""""""""
-"Windowsで内部エンコーディングがcp932以外の場合
-"makeのメッセージが化けるのを回避
-""""""""""""""""""""""""""""""
+"----------------------------------------
+" Windowsで内部エンコーディングがcp932以外の場合
+" makeのメッセージが化けるのを回避
+"----------------------------------------
 if has('win32') || has('win64') || has('win95') || has('win16')
   au QuickfixCmdPost make call QFixCnv('cp932')
 endif
@@ -383,18 +451,13 @@ function! QFixCnv(enc)
   endfor
   call setqflist(qflist)
 endfunction
-
 "----------------------------------------
-" 各種プラグイン設定
+"grep,tagsのためカレントディレクトリをファイルと同じディレクトリに移動する
 "----------------------------------------
-" vundle
-set rtp+=$MY_VIMRUNTIME/vundle.git/
-filetype off
-"call vundle#rc()
-"Bundle 'mitechie/pyflakes-pathogen'
-"Bundle 'sontek/rope-vim'
-"Bundle 'lambdalisue/vim-django-support'
-
-"----------------------------------------
-" 一時設定
-"----------------------------------------
+if exists('+autochdir')
+  "autochdirがある場合カレントディレクトリを移動
+  set autochdir
+else
+  "autochdirが存在しないが、カレントディレクトリを移動したい場合
+  au BufEnter * execute ":silent! lcd " . escape(expand("%:p:h"), ' ')
+endif
