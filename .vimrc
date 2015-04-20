@@ -18,9 +18,9 @@ set fileformat=unix
 "----------------------------------------
 " ユーザーランタイムパス設定
 "----------------------------------------
-"Windows, unixでのruntimepathの違いを吸収するためのもの。 
-"$MY_VIMRUNTIMEはユーザーランタイムディレクトリを示す。 
-":echo $MY_VIMRUNTIMEで実際のパスを確認できます。 
+"Windows, unixでのruntimepathの違いを吸収するためのもの。
+"$MY_VIMRUNTIMEはユーザーランタイムディレクトリを示す。
+":echo $MY_VIMRUNTIMEで実際のパスを確認できます。
 if isdirectory($HOME . '/.vim')
   let $MY_VIMRUNTIME = $HOME.'/.vim'
 elseif isdirectory($HOME . '\vimfiles')
@@ -29,8 +29,8 @@ elseif isdirectory($VIM . '\vimfiles')
   let $MY_VIMRUNTIME = $VIM.'\vimfiles'
 endif
 "ランタイムパスを通す必要のあるプラグインを使用する場合
-"$MY_VIMRUNTIMEを使用すると Windows/Linuxで切り分ける必要が無くなります。 
-"例) vimfiles/qfixapp (Linuxでは~/.vim/qfixapp)にランタイムパスを通す場合 
+"$MY_VIMRUNTIMEを使用すると Windows/Linuxで切り分ける必要が無くなります。
+"例) vimfiles/qfixapp (Linuxでは~/.vim/qfixapp)にランタイムパスを通す場合
 "set runtimepath+=$MY_VIMRUNTIME/qfixapp
 
 "----------------------------------------
@@ -70,7 +70,7 @@ else
     if has('vim_starting')
         execute "set runtimepath+=" . s:neobundle_root
     endif
-    call neobundle#rc(s:bundle_root)
+    call neobundle#begin(s:bundle_root)
 
     " NeoBundle自身をNeoBundleで管理させる
     NeoBundleFetch 'Shougo/neobundle.vim'
@@ -93,6 +93,49 @@ else
         \ "autoload": {
         \   "commands": ["Gist"],
         \ }}
+
+    " Undoを便利にする
+    NeoBundleLazy "sjl/gundo.vim", {
+          \ "autoload": {
+          \   "commands": ['GundoToggle'],
+          \}}
+    nnoremap <Leader>g :GundoToggle<CR>
+
+    " Python補完・リファクタリング・リファレンス環境
+    NeoBundleLazy "davidhalter/jedi-vim", {
+          \ "autoload": {
+          \   "filetypes": ["python", "python3", "djangohtml"],
+          \ },
+          \ "build": {
+          \   "mac": "pip install jedi",
+          \   "unix": "pip install jedi",
+          \ }}
+    let s:hooks = neobundle#get_hooks("jedi-vim")
+    function! s:hooks.on_source(bundle)
+        " jediにvimの設定を任せると'completeopt+=preview'するので
+        " 自動設定機能をOFFにし手動で設定を行う
+        let g:jedi#auto_vim_configuration = 0
+         " 補完の最初の項目が選択された状態だと使いにくいためオフにする
+        let g:jedi#popup_select_first = 0
+        " quickrunと被るため大文字に変更
+        let g:jedi#rename_command = '<Leader>R'
+        " gundoと被るため大文字に変更 (2013-06-24 10:00 追記）
+        let g:jedi#goto_assignments_command = '<Leader>G'
+    endfunction
+
+    " 構文間違え指摘
+    NeoBundle "scrooloose/syntastic", {
+      \ "build": {
+      \   "mac": ["pip install flake8", "npm -g install coffeelint"],
+      \   "unix": ["pip install flake8", "npm -g install coffeelint"],
+      \ }}
+
+    " Djangoを正しくVimで読み込めるようにする
+    NeoBundleLazy "lambdalisue/vim-django-support", {
+          \ "autoload": {
+          \   "filetypes": ["python", "python3", "djangohtml"]
+          \ }}
+
     " vim-fugitiveは'autocmd'多用してるっぽくて遅延ロード不可
     NeoBundle "tpope/vim-fugitive"
     NeoBundleLazy "gregsexton/gitv", {
@@ -100,65 +143,6 @@ else
         \ "autoload": {
         \   "commands": ["Gitv"],
         \ }}
-
-    " 補完
-    "if has('lua') && v:version >= 703 && has('patch885')
-    "    NeoBundleLazy "Shougo/neocomplete.vim", {
-    "        \ "autoload": {
-    "        \   "insert": 1,
-    "        \ }}
-    "    " 2013-07-03 14:30 NeoComplCacheに合わせた
-    "    let g:neocomplete#enable_at_startup = 1
-    "    let s:hooks = neobundle#get_hooks("neocomplete.vim")
-    "    function! s:hooks.on_source(bundle)
-    "        let g:acp_enableAtStartup = 0
-    "        let g:neocomplet#enable_smart_case = 1
-    "        " NeoCompleteを有効化
-    "        " NeoCompleteEnable
-    "    endfunction
-    "else
-    "    NeoBundleLazy "Shougo/neocomplcache.vim", {
-    "        \ "autoload": {
-    "        \   "insert": 1,
-    "        \ }}
-    "    let g:neocomplcache_enable_at_startup = 1
-    "    let s:hooks = neobundle#get_hooks("neocomplcache.vim")
-    "    function! s:hooks.on_source(bundle)
-    "        let g:acp_enableAtStartup = 0
-    "        let g:neocomplcache_enable_smart_case = 1
-    "        " NeoComplCacheを有効化
-    "        " NeoComplCacheEnable 
-    "    endfunction
-    "endif
-
-    " コード入力の簡略化
-    "NeoBundleLazy "Shougo/neosnippet.vim", {
-    "      \ "depends": ["honza/vim-snippets"],
-    "      \ "autoload": {
-    "      \   "insert": 1,
-    "      \ }}
-    "let s:hooks = neobundle#get_hooks("neosnippet.vim")
-    "function! s:hooks.on_source(bundle)
-    "  " Plugin key-mappings.
-    "  imap <C-k>     <Plug>(neosnippet_expand_or_jump)
-    "  smap <C-k>     <Plug>(neosnippet_expand_or_jump)
-    "  xmap <C-k>     <Plug>(neosnippet_expand_target)
-    "  " SuperTab like snippets behavior.
-    "  imap <expr><TAB> neosnippet#expandable_or_jumpable() ?
-    "  \ "\<Plug>(neosnippet_expand_or_jump)"
-    "  \: pumvisible() ? "\<C-n>" : "\<TAB>"
-    "  smap <expr><TAB> neosnippet#expandable_or_jumpable() ?
-    "  \ "\<Plug>(neosnippet_expand_or_jump)"
-    "  \: "\<TAB>"
-    "  " For snippet_complete marker.
-    "  if has('conceal')
-    "    set conceallevel=2 concealcursor=i
-    "  endif
-    "  " Enable snipMate compatibility feature.
-    "  let g:neosnippet#enable_snipmate_compatibility = 1
-    "  " Tell Neosnippet about the other snippets
-    "  let g:neosnippet#snippets_directory=s:bundle_root . '/vim-snippets/snippets'
-    "endfunction
 
     " インデントの可視化
     NeoBundle "nathanaelkane/vim-indent-guides"
@@ -168,13 +152,6 @@ else
       let g:indent_guides_guide_size = 1
       " IndentGuidesEnable " 2013-06-24 10:00 追記
     endfunction
-
-    " Undoを便利にする
-    NeoBundleLazy "sjl/gundo.vim", {
-          \ "autoload": {
-          \   "commands": ['GundoToggle'],
-          \}}
-    nnoremap <Leader>g :GundoToggle<CR>
 
     " プログラムの即時実行
     NeoBundleLazy "thinca/vim-quickrun", {
@@ -189,49 +166,16 @@ else
               \ }
     endfunction
 
-    " 構文間違え指摘
-    NeoBundle "scrooloose/syntastic", {
-      \ "build": {
-      \   "mac": ["pip install flake8", "npm -g install coffeelint"],
-      \   "unix": ["pip install flake8", "npm -g install coffeelint"],
-      \ }}
-
-    " virtualenvとdjango問題の解決
-    " Djangoを正しくVimで読み込めるようにする
-    NeoBundleLazy "lambdalisue/vim-django-support", {
-          \ "autoload": {
-          \   "filetypes": ["python", "python3", "djangohtml"]
-          \ }}
     " Vimで正しくvirtualenvを処理できるようにする
     NeoBundleLazy "jmcantrell/vim-virtualenv", {
           \ "autoload": {
           \   "filetypes": ["python", "python3", "djangohtml"]
           \ }}
 
-    " Python補完・リファクタリング・リファレンス環境
-    "NeoBundleLazy "davidhalter/jedi-vim", {
-    "      \ "autoload": {
-    "      \   "filetypes": ["python", "python3", "djangohtml"],
-    "      \ },
-    "      \ "build": {
-    "      \   "mac": "pip install jedi",
-    "      \   "unix": "pip install jedi",
-    "      \ }}
-    "let s:hooks = neobundle#get_hooks("jedi-vim")
-    "function! s:hooks.on_source(bundle)
-    "    " jediにvimの設定を任せると'completeopt+=preview'するので
-    "    " 自動設定機能をOFFにし手動で設定を行う
-    "    let g:jedi#auto_vim_configuration = 0
-    "     " 補完の最初の項目が選択された状態だと使いにくいためオフにする
-    "    let g:jedi#popup_select_first = 0
-    "    " quickrunと被るため大文字に変更
-    "    let g:jedi#rename_command = '<Leader>R'
-    "    " gundoと被るため大文字に変更 (2013-06-24 10:00 追記）
-    "    let g:jedi#goto_assignments_command = '<Leader>G'
-    "endfunction
-
     " インストールされていないプラグインのチェックおよびダウンロード
     NeoBundleCheck
+
+    call neobundle#end()
 endif
 
 " ファイルタイププラグインおよびインデントを有効化
@@ -281,7 +225,7 @@ set backspace=indent,eol,start
 " 'unnamedplus'が存在しているかどうかで設定を分ける必要がある
 if has('unnamedplus')
     " set clipboard& clipboard+=unnamedplus " 2013-07-03 14:30 unnamed 追加
-    set clipboard& clipboard+=unnamedplus,unnamed 
+    set clipboard& clipboard+=unnamedplus,unnamed
 else
     " set clipboard& clipboard+=unnamed,autoselect 2013-06-24 10:00 autoselect 削除
     set clipboard& clipboard+=unnamed
@@ -332,7 +276,7 @@ nnoremap <F8> :source %<CR>
 nnoremap ZZ <Nop>
 "カーソルをj k では表示行で移動する。物理行移動は<C-n>,<C-p>
 "キーボードマクロには物理行移動を推奨
-"h l はノーマルモードのみ行末、行頭を超えることが可能に設定(whichwrap) 
+"h l はノーマルモードのみ行末、行頭を超えることが可能に設定(whichwrap)
 " zvはカーソル位置の折り畳みを開くコマンド
 nnoremap <Down> gj
 nnoremap <Up>   gk
@@ -392,9 +336,9 @@ set wildmenu
 " iconvが使用可能の場合、カーソル上の文字コードをエンコードに応じた表示にするFencB()を使用
 "----------------------------------------
 if has('iconv')
-  set statusline=%<%f\ %m\ %r%h%w%{'['.(&fenc!=''?&fenc:&enc).(&bomb?':BOM':'').']['.&ff.']'}%=[0x%{FencB()}]\ (%v,%l)/%L%8P\ 
+  set statusline=%<%f\ %m\ %r%h%w%{'['.(&fenc!=''?&fenc:&enc).(&bomb?':BOM':'').']['.&ff.']'}%=[0x%{FencB()}]\ (%v,%l)/%L%8P\
 else
-  set statusline=%<%f\ %m\ %r%h%w%{'['.(&fenc!=''?&fenc:&enc).(&bomb?':BOM':'').']['.&ff.']'}%=\ (%v,%l)/%L%8P\ 
+  set statusline=%<%f\ %m\ %r%h%w%{'['.(&fenc!=''?&fenc:&enc).(&bomb?':BOM':'').']['.&ff.']'}%=\ (%v,%l)/%L%8P\
 endif
 
 function! FencB()
