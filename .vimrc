@@ -130,6 +130,12 @@ else
       \   "unix": ["pip install flake8", "npm -g install coffeelint"],
       \ }}
 
+    " tagbar
+    NeoBundle 'majutsushi/tagbar'
+
+    " vim compiler file for go
+    NeoBundle "rjohnsondev/vim-compiler-go"
+
     " Djangoを正しくVimで読み込めるようにする
     NeoBundleLazy "lambdalisue/vim-django-support", {
           \ "autoload": {
@@ -143,6 +149,15 @@ else
         \ "autoload": {
         \   "commands": ["Gitv"],
         \ }}
+
+    " vim-go
+    NeoBundle 'fatih/vim-go'
+
+    " vim-godef
+    NeoBundle 'dgryski/vim-godef'
+
+    " vim-go-extra
+    NeoBundle 'vim-jp/vim-go-extra'
 
     " インデントの可視化
     NeoBundle "nathanaelkane/vim-indent-guides"
