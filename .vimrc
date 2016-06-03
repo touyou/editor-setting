@@ -136,6 +136,9 @@ else
     " vim compiler file for go
     NeoBundle "rjohnsondev/vim-compiler-go"
 
+    " dogelang mode
+    NeoBundle 'rubik/vim-dg'
+
     " Djangoを正しくVimで読み込めるようにする
     NeoBundleLazy "lambdalisue/vim-django-support", {
           \ "autoload": {
@@ -186,6 +189,19 @@ else
           \ "autoload": {
           \   "filetypes": ["python", "python3", "djangohtml"]
           \ }}
+
+    " Markdown Preview
+    NeoBundle 'plasticboy/vim-markdown'
+    NeoBundle 'kannokanno/previm'
+    NeoBundle 'tyru/open-browser.vim'
+    au BufRead,BufNewFile *.md set filetype=markdown
+    let g:previm_open_cmd = 'open -a Chrome'
+
+    " lightline
+    " NeoBundle 'itchny/lightline.vim'
+
+    " railscasts-earthtone
+    NeoBundle 'KeitaNakamura/railscasts-earthtone.vim'
 
     " インストールされていないプラグインのチェックおよびダウンロード
     NeoBundleCheck
@@ -276,6 +292,12 @@ set novisualbell
 
 " デフォルト不可視文字は美しくないのでUnicodeで綺麗に
 set listchars=tab:»-,trail:-,extends:»,precedes:«,nbsp:%,eol:↲
+
+" colorschem
+colorscheme railscasts-earthtone
+let g:lightline = {}
+let g:lightline.colorscheme = 'railscats_earthtone'
+set laststatus=2
 
 "------------------------------------------------
 " マクロおよびキー設定
