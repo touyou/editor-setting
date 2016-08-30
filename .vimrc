@@ -123,6 +123,8 @@ else
         let g:jedi#goto_assignments_command = '<Leader>G'
     endfunction
 
+    " Swift関連
+    NeoBundle 'toyamarinyon/vim-swift'
     " 構文間違え指摘
     NeoBundle "scrooloose/syntastic", {
       \ "build": {
